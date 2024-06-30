@@ -1,11 +1,12 @@
 import { Request, Response, Router } from "express";
 import { registerPOST } from "../lib/registerHTTP";
 import { hashPassword } from "../lib/lib";
-import { createUser, doesUserExist } from "../lib/db";
 import { requireValidCredentialsAuth } from "../middleware/auth_mw";
 import { generateJWT } from "../lib/jwt";
 import * as schema from "../schema/schema";
-export default (router: Router) => {
+import { SimpleGateway } from "../SimpleGateway";
+
+export default (router: Router, gateway: SimpleGateway) => {
   registerPOST(
     router,
     "/accounts/create",
@@ -17,13 +18,13 @@ export default (router: Router) => {
         );
       }
       const hashedPassword = await hashPassword(password);
-      const userExists = await doesUserExist(username);
+      const userExists = await gateway.dbClient.doesUserExist(username);
       if (!userExists && username && password) {
         const newUser: schema.NewUser = {
           username: username,
           password: hashedPassword,
         };
-        if ((await createUser(newUser)) != null) {
+        if ((await gateway.dbClient.createUser(newUser)) != null) {
           return res.send(`Registered user: ${username}: ${password}`);
         }
       }

@@ -5,17 +5,18 @@ import {
   requireValidCredentialsAuth,
   requireValidJWTAuth,
 } from "../middleware/auth_mw";
-import { getUserOfAPIKey } from "../lib/db";
+// import { getUserOfAPIKey } from "../lib/db";
 import { ApiKey } from "../schema/schema";
+import { SimpleGateway } from "../SimpleGateway";
 
-export default (router: Router) => {
+export default (router: Router, gateway: SimpleGateway) => {
   registerPOST(
     router,
     "/testing/apikey/hello",
     async (req: Request, res: Response) => {
       const validKey = res.locals.apikey as ApiKey;
       console.log(validKey);
-      const user = await getUserOfAPIKey(validKey);
+      const user = await gateway.dbClient.getUserOfAPIKey(validKey);
       if (!user) {
         res.status(403).send("Owner of API Key not found");
       } else {

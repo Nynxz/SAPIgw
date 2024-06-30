@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-//import { LogRouteAttempt } from "../lib/logging";
 
 const AttachFinishHandler = (
   req: Request,

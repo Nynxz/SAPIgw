@@ -1,10 +1,8 @@
 import * as jwt from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
-import { checkAPIKey, getUserByUsername } from "../lib/db";
 import { comparePassword } from "../lib/lib";
 import { ApiKey } from "../schema/schema";
-// import { checkAPIKey, getUserByUsername, getUserOfAPIKey } from "../lib/db";
-// import { comparePassword } from "../lib/lib";
+import { SimpleGateway } from "../SimpleGateway";
 
 class AuthMiddleware {
   name: string;
@@ -13,6 +11,11 @@ class AuthMiddleware {
     res: Response,
     next: NextFunction
   ) => Promise<boolean>;
+
+  static gateway: SimpleGateway;
+  static SetGateway = (gateway: SimpleGateway) => {
+    AuthMiddleware.gateway = gateway;
+  };
 
   constructor(name: string, callback: any) {
     this.callback = callback;
@@ -39,12 +42,12 @@ class AuthMiddleware {
     return res.status(403).send(`Invalid ${this.name}`);
   }
 }
-
+export { AuthMiddleware };
 const requireValidAPIKeyAuth = new AuthMiddleware(
   "API Key",
   async (req: Request, res: Response, next: NextFunction) => {
     const apiKey = req.query.apiKey?.toString();
-    const validKey = await checkAPIKey(apiKey);
+    const validKey = await AuthMiddleware.gateway.dbClient.checkAPIKey(apiKey);
     if (validKey) {
       res.locals.apikey = validKey as ApiKey;
       return true;
@@ -58,7 +61,9 @@ const requireValidCredentialsAuth = new AuthMiddleware(
   "Credentials",
   async (req: Request, res: Response, next: NextFunction) => {
     const { username, password } = req.body;
-    const user = await getUserByUsername(username);
+    const user = await AuthMiddleware.gateway.dbClient.getUserByUsername(
+      username
+    );
     if (!user || !password) {
       console.log("Could not find user");
       return false;

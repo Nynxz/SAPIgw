@@ -1,6 +1,4 @@
 import * as dotenv from "dotenv";
-import { readdirSync } from "fs";
-import { join } from "path";
 dotenv.config();
 
 type Config = {

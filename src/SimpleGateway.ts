@@ -4,6 +4,8 @@ import { readdirSync } from "fs";
 import { join } from "path";
 import postgres, { Sql } from "postgres";
 import { drizzle, PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import { DBClient } from "./DBClient";
+import { AuthMiddleware } from "./middleware/auth_mw";
 
 //import cors from "cors";
 
@@ -12,15 +14,13 @@ class SimpleGateway {
   config: Config;
   middleware: RequestHandler[];
   apiRouter: Router;
-  db: PostgresJsDatabase<Record<string, never>>; //ts is le cooked
-  queryClient: Sql<{}>;
+  dbClient: DBClient;
 
   constructor() {
     this.app = express();
     this.config = CreateConfig();
     //TODO : Turn this shit into another class that we pass config to instantiate, then we use that class instead of this shit
-    this.queryClient = postgres(this.config.DATABASE_URL);
-    this.db = drizzle(this.queryClient);
+    this.dbClient = new DBClient(this.config.DATABASE_URL);
     this.middleware = [
       express.json(),
       // cors({
@@ -28,11 +28,12 @@ class SimpleGateway {
       //   credentials: true,
       // }),
     ];
+    AuthMiddleware.SetGateway(this) 
 
     this.apiRouter = express.Router();
 
     this._configureMiddleware(this.app, this.middleware);
-    this._loadRoutes(this.apiRouter);
+    this._loadRoutes(this.apiRouter); //seperated - later may use files to seperate into base routes
     this.app.use("/api", this.apiRouter);
   }
 
@@ -60,10 +61,11 @@ class SimpleGateway {
         const filePath = join(routesDir, file);
         const registerRoutes = require(filePath).default;
         if (typeof registerRoutes === "function") {
-          registerRoutes(app);
+          registerRoutes(app, this);
         }
       }
     } catch (error) {
+      console.log(error);
       console.log(`[server]: WARN - NO ROUTES LOADED`);
       console.log(`[server]: WARN - Did you create a /routes folder?`);
     }
