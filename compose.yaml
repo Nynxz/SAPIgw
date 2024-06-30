@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:alpine
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: simpledatabasepassword
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  gateway:
+    image: gateway
+    build: .
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgresql://postgres:simpledatabasepassword@postgres:5432/postgres
+      - LOGGING=true
+    volumes:
+      - .:/src
+      - ./logs:/logs
+      - nodemodules:/src/node_modules
+    ports:
+      - "4000:3000"
+
+volumes:
+  pgdata:
+  nodemodules: {}
