@@ -16,7 +16,7 @@ Includes
 
 This currently runs the express server and postgres database in containers, with plans to add prometheus and grafana in the future.
 
-I have written a [blog post]([https://www.](https://www.nynxz.com/post/18)) outlining a similar setup with InfluxDB.
+I have written a [blog post](https://www.nynxz.com/post/18) outlining a similar setup with InfluxDB.
 
 
 none of this is secure 🤷‍♂️ this is just a fun project for me to learn with, feel free to contact me!
