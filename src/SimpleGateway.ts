@@ -19,7 +19,7 @@ class SimpleGateway {
   constructor() {
     this.app = express();
     this.config = CreateConfig();
-    //TODO : Turn this shit into another class that we pass config to instantiate, then we use that class instead of this shit
+
     this.dbClient = new DBClient(this.config.DATABASE_URL);
     this.middleware = [
       express.json(),
@@ -28,7 +28,6 @@ class SimpleGateway {
       //   credentials: true,
       // }),
     ];
-    AuthMiddleware.SetGateway(this) 
 
     this.apiRouter = express.Router();
 
@@ -51,7 +50,7 @@ class SimpleGateway {
     });
   };
 
-  private _loadRoutes = (app: Router) => {
+  private _loadRoutes = (router: Router) => {
     try {
       const routesDir = join(__dirname, "routes");
       const routeFiles = readdirSync(routesDir).filter((file) =>
@@ -61,7 +60,7 @@ class SimpleGateway {
         const filePath = join(routesDir, file);
         const registerRoutes = require(filePath).default;
         if (typeof registerRoutes === "function") {
-          registerRoutes(app, this);
+          registerRoutes(router, this);
         }
       }
     } catch (error) {
