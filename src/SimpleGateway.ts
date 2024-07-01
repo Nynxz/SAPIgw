@@ -6,21 +6,27 @@ import postgres, { Sql } from "postgres";
 import { drizzle, PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { DBClient } from "./DBClient";
 import { AuthMiddleware } from "./middleware/auth_mw";
+import { Server } from "http";
 
 //import cors from "cors";
-
+type SimpleGatewayConfig = {
+  testing: boolean;
+};
 class SimpleGateway {
   app: Express;
   config: Config;
   middleware: RequestHandler[];
   apiRouter: Router;
   dbClient: DBClient;
+  server: Server | undefined;
 
-  constructor() {
+  constructor(_config: SimpleGatewayConfig = { testing: false }) {
     this.app = express();
     this.config = CreateConfig();
 
-    this.dbClient = new DBClient(this.config.DATABASE_URL);
+    this.dbClient = new DBClient(
+      _config.testing ? this.config.DATABASE_URL_TEST : this.config.DATABASE_URL
+    );
     this.middleware = [
       express.json(),
       // cors({
@@ -37,7 +43,7 @@ class SimpleGateway {
   }
 
   start() {
-    this.app.listen(this.config.PORT, () => {
+    this.server = this.app.listen(this.config.PORT, () => {
       console.log(
         `[server]: Server is running at http://localhost:${this.config.PORT}`
       );

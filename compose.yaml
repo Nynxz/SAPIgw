@@ -15,6 +15,7 @@ services:
     environment:
       - PORT=3000
       - DATABASE_URL=postgresql://postgres:simpledatabasepassword@postgres:5432/postgres
+      - DATABASE_URL_TEST=postgresql://postgres:simpledatabasepassword@postgres:5432/testdb
       - LOGGING=true
     volumes:
       - .:/src
