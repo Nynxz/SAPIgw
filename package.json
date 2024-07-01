@@ -1,5 +1,5 @@
 {
-  "name": "SAG",
+  "name": "sapigw",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -13,8 +13,8 @@
     "migrate": "drizzle-kit migrate",
     "push": "drizzle-kit push --config src/drizzle.config.ts && npm run push:test",
     "push:test": "drizzle-kit push --config src/drizzle.test.config.ts",
-    "test": "jest",
-    "test:e2e": "jest --detectOpenHandles --testPathPattern=/src/__e2etests__"
+    "test": "jest --testPathPattern=/tests/core",
+    "test:e2e": "jest --testPathPattern=/tests/e2e"
   },
   "keywords": [],
   "author": "",
@@ -44,5 +44,8 @@
     "express-rate-limit": "^7.3.1",
     "jsonwebtoken": "^9.0.2",
     "postgres": "^3.4.4"
+  },
+  "imports": {
+    "@/*": "/src"
   }
 }

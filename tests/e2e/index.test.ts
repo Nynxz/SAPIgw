@@ -1,5 +1,5 @@
 import request from "supertest";
-import { SimpleGateway } from "../SimpleGateway";
+import { SimpleGateway } from "@/SimpleGateway";
 
 describe("/api/hello", () => {
   let app: SimpleGateway;
