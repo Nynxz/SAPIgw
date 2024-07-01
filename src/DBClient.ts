@@ -85,7 +85,7 @@ class DBClient {
   };
   getAPIKeysOfUserByID = async (userId: number) => {
     const apiKeys = await this.db.query.apikey.findMany({
-      where: eq(schema.apikey.id, userId),
+      where: eq(schema.apikey.user, userId),
     });
     return apiKeys;
   };
