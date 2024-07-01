@@ -4,50 +4,68 @@ import { comparePassword } from "../lib/lib";
 import { ApiKey } from "../schema/schema";
 import { SimpleGateway } from "../SimpleGateway";
 
+interface IAuthMW {
+  (gateway: SimpleGateway): (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => void;
+}
+
 class AuthMiddleware {
   name: string;
   callback: (
+    gateway: SimpleGateway,
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<boolean>;
+  // static gateway: SimpleGateway;
+  // static SetGateway = (gateway: SimpleGateway) => {
+  //   AuthMiddleware.gateway = gateway;
+  // };
 
-  static gateway: SimpleGateway;
-  static SetGateway = (gateway: SimpleGateway) => {
-    AuthMiddleware.gateway = gateway;
-  };
+  // private passed: (req: Request, res: Response, next: NextFunction) => void;
 
   constructor(name: string, callback: any) {
     this.callback = callback;
     this.name = name;
   }
 
-  async middleware(req: Request, res: Response, next: NextFunction) {
-    //Default Behaviour
-    console.log(`[server]: AUTH ${this.name}...`);
-    if (await this.callback(req, res, next)) {
-      this.passed(req, res, next);
-    } else {
-      this.failed(req, res, next);
-    }
-  }
+  public middleware: IAuthMW = (gateway: SimpleGateway) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
+      //Default Behaviour
+      console.log(`[server]: AUTH ${this.name}...`);
+      if (await this.callback(gateway, req, res, next)) {
+        this.passed(req, res, next);
+      } else {
+        this.failed(req, res, next);
+      }
+    };
+  };
 
-  passed(req: Request, res: Response, next: NextFunction) {
+  private passed = (req: Request, res: Response, next: NextFunction) => {
     console.log(`[server]: AUTH ${this.name} OK`);
     next();
-  }
+  };
 
-  failed(req: Request, res: Response, next: NextFunction) {
+  private failed(req: Request, res: Response, next: NextFunction) {
     console.log(`[server]: AUTH ${this.name} BAD`);
     return res.status(403).send(`Invalid ${this.name}`);
   }
 }
-export { AuthMiddleware };
+export { AuthMiddleware, IAuthMW };
+
 const requireValidAPIKeyAuth = new AuthMiddleware(
   "API Key",
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (
+    gateway: SimpleGateway,
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     const apiKey = req.query.apiKey?.toString();
-    const validKey = await AuthMiddleware.gateway.dbClient.checkAPIKey(apiKey);
+    const validKey = await gateway.dbClient.checkAPIKey(apiKey);
     if (validKey) {
       res.locals.apikey = validKey as ApiKey;
       return true;
@@ -59,11 +77,14 @@ const requireValidAPIKeyAuth = new AuthMiddleware(
 
 const requireValidCredentialsAuth = new AuthMiddleware(
   "Credentials",
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (
+    gateway: SimpleGateway,
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     const { username, password } = req.body;
-    const user = await AuthMiddleware.gateway.dbClient.getUserByUsername(
-      username
-    );
+    const user = await gateway.dbClient.getUserByUsername(username);
     if (!user || !password) {
       console.log("Could not find user");
       return false;
@@ -80,7 +101,12 @@ const requireValidCredentialsAuth = new AuthMiddleware(
 
 const requireValidJWTAuth = new AuthMiddleware(
   "JWT",
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (
+    gateway: SimpleGateway,
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const authHeader = req.headers.authorization;
       if (!authHeader) {
