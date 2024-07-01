@@ -91,6 +91,6 @@ describe("Gateway", () => {
 afterAll(async () => {
   await app.dbClient.db.delete(user);
   await app.dbClient.db.delete(apikey);
-
+  //Testing
   await app.stop();
 });
