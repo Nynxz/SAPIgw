@@ -14,7 +14,7 @@
     "push": "drizzle-kit push --config src/drizzle.config.ts && npm run push:test",
     "push:test": "drizzle-kit push --config src/drizzle.test.config.ts",
     "test": "jest --testPathPattern=/tests/core",
-    "test:e2e": "jest --testPathPattern=/tests/e2e"
+    "test:e2e": "jest --testPathPattern=/tests/e2e --noStackTrace --silent --verbose"
   },
   "keywords": [],
   "author": "",

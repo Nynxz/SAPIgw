@@ -29,6 +29,7 @@ class SimpleGateway {
     );
     this.middleware = [
       express.json(),
+      express.text(),
       // cors({
       //   origin: `http://localhost:${this.config.PORT}`,
       //   credentials: true,
@@ -49,6 +50,16 @@ class SimpleGateway {
       );
     });
   }
+
+  stop = async (): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      this.dbClient.queryClient.end();
+      this.server?.close((err) => {
+        if (err) reject();
+        else resolve();
+      });
+    });
+  };
 
   private _configureMiddleware = (app: Express, middleware: unknown[]) => {
     middleware.forEach((_middleware: any) => {
