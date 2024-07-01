@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { registerGET, registerPOST } from "../lib/registerHTTP";
+import { registerHTTP } from "../lib/registerHTTP";
 import {
   requireValidAPIKeyAuth,
   requireValidCredentialsAuth,
@@ -10,9 +10,8 @@ import { ApiKey } from "../schema/schema";
 import { SimpleGateway } from "../SimpleGateway";
 
 export default (router: Router, gateway: SimpleGateway) => {
-  registerPOST(
-    router,
-    "/testing/apikey/hello",
+  registerHTTP(
+    { method: "post", gateway, router, endpoint: "/testing/apikey/hello" },
     async (req: Request, res: Response) => {
       const validKey = res.locals.apikey as ApiKey;
       console.log(validKey);
@@ -23,12 +22,11 @@ export default (router: Router, gateway: SimpleGateway) => {
         res.send(`Hello ${user?.username}!`);
       }
     },
-    requireValidAPIKeyAuth.middleware.bind(requireValidAPIKeyAuth)
+    requireValidAPIKeyAuth.middleware
   );
 
-  registerPOST(
-    router,
-    "/testing/jwt/hello",
+  registerHTTP(
+    { method: "post", gateway, router, endpoint: "/testing/jwt/hello" },
     async (req: Request, res: Response) => {
       console.log(res.locals.user);
       console.log(
@@ -38,12 +36,11 @@ export default (router: Router, gateway: SimpleGateway) => {
       //TODO: read JWT
       res.send(`Hello ${res.locals.user.username}!`);
     },
-    requireValidJWTAuth.middleware.bind(requireValidJWTAuth)
+    requireValidJWTAuth.middleware
   );
 
-  registerPOST(
-    router,
-    "/testing/credentials/hello",
+  registerHTTP(
+    { method: "post", gateway, router, endpoint: "/testing/credentials/hello" },
     async (req: Request, res: Response) => {
       const user = res.locals.user;
       if (!user) {
@@ -53,6 +50,6 @@ export default (router: Router, gateway: SimpleGateway) => {
         res.send(`Hello ${user?.username}!`);
       }
     },
-    requireValidCredentialsAuth.middleware.bind(requireValidCredentialsAuth)
+    requireValidCredentialsAuth.middleware
   );
 };

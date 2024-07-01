@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { registerPOST } from "../lib/registerHTTP";
+import { registerHTTP } from "../lib/registerHTTP";
 import { hashPassword } from "../lib/lib";
 import { requireValidCredentialsAuth } from "../middleware/auth_mw";
 import { generateJWT } from "../lib/jwt";
@@ -7,9 +7,13 @@ import * as schema from "../schema/schema";
 import { SimpleGateway } from "../SimpleGateway";
 
 export default (router: Router, gateway: SimpleGateway) => {
-  registerPOST(
-    router,
-    "/accounts/create",
+  registerHTTP(
+    {
+      method: "post",
+      gateway,
+      router,
+      endpoint: "/accounts/create",
+    },
     async (req: Request, res: Response) => {
       const { username, password } = req.body;
       if (username == undefined || password == undefined) {
@@ -32,9 +36,8 @@ export default (router: Router, gateway: SimpleGateway) => {
     }
   );
 
-  registerPOST(
-    router,
-    "/accounts/login",
+  registerHTTP(
+    { method: "post", gateway, router, endpoint: "/accounts/login" },
     async (req: Request, res: Response) => {
       //TODO: standarize messages passed down through middleware (turn middleware into a class? idk)
       const user = res.locals.user as schema.User;
@@ -49,6 +52,6 @@ export default (router: Router, gateway: SimpleGateway) => {
       res.send(`Got Valid Credentials: ${user.username}`);
       // TODO: JWT
     },
-    requireValidCredentialsAuth.middleware.bind(requireValidCredentialsAuth)
+    requireValidCredentialsAuth.middleware
   );
 };
